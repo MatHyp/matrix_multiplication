@@ -33,7 +33,7 @@ void readMatrixFromFile(const char *filename, int matrix[MAX_ROWS][MAX_COLS], in
 }
 
 void printMatrix(int matrix[MAX_ROWS][MAX_COLS], int rows, int cols) {
-    printf("Wczytana macierz:\n");
+
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             printf("%d ", matrix[i][j]);
@@ -42,8 +42,10 @@ void printMatrix(int matrix[MAX_ROWS][MAX_COLS], int rows, int cols) {
     }
 }
 
+void matrixMultiplication(){}
+
 int main() {
-    int matrixA[MAX_ROWS][MAX_COLS], matrixB[MAX_ROWS][MAX_COLS], product[MAX_ROWS][MAX_COLS];
+    int matrixA[MAX_ROWS][MAX_COLS], matrixB[MAX_ROWS][MAX_COLS], resultMatrix[MAX_ROWS][MAX_COLS];
     int arows, acolumns, brows, bcolumns;
     int i, j, k;
     int sum = 0;
@@ -57,24 +59,20 @@ int main() {
     printf("\nMatrix B:\n");
     printMatrix(matrixB, brows, bcolumns);
 
+    // Matrix multiplation
+
     for (i = 0; i < arows; i++) {
         for (j = 0; j < bcolumns; j++) {
             sum = 0; // Reset sum for each element in the result matrix
             for (k = 0; k < brows; k++) {
                 sum += matrixA[i][k] * matrixB[k][j];
             }
-            product[i][j] = sum;
+            resultMatrix[i][j] = sum;
         }
     }
 
     printf("Result:\n");
-
-    for (i = 0; i < arows; i++) {
-        for (j = 0; j < bcolumns; j++) {
-            printf("%d ", product[i][j]);
-        }
-        printf("\n");
-    }
+    printMatrix(resultMatrix,arows,bcolumns);
 
     return 0;
 }
