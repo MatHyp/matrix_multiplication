@@ -4,7 +4,7 @@
 #define MAX_ROWS 100
 #define MAX_COLS 100
 
-void readMatrixFromFile(const char *filename, int matrix[MAX_ROWS][MAX_COLS], int *rows, int *cols) {
+void readMatrixFromFile(const char *filename, int ***matrix, int *rows, int *cols) {
     FILE *file = fopen(filename, "r");
 
     // Cannot open a file
@@ -15,7 +15,12 @@ void readMatrixFromFile(const char *filename, int matrix[MAX_ROWS][MAX_COLS], in
 
     fscanf(file, "%d %d", rows, cols);
 
-    // Check that 
+    *matrix = (int **)malloc(*rows * sizeof(int *));
+    for (int i = 0; i < *rows; i++) {
+        (*matrix)[i] = (int *)malloc(*cols * sizeof(int));
+    }
+
+    // Check that
     if (*rows > MAX_ROWS || *cols > MAX_COLS) {
         fprintf(stderr, "Zbyt duża macierz. Zmień rozmiary MAX_ROWS lub MAX_COLS.\n");
         fclose(file);
@@ -24,16 +29,14 @@ void readMatrixFromFile(const char *filename, int matrix[MAX_ROWS][MAX_COLS], in
 
     for (int i = 0; i < *rows; i++) {
         for (int j = 0; j < *cols; j++) {
-            
-            fscanf(file, "%d", &matrix[i][j]);
+            fscanf(file, "%d", &(*matrix)[i][j]);
         }
     }
-    
+
     fclose(file);
 }
 
-void printMatrix(int matrix[MAX_ROWS][MAX_COLS], int rows, int cols) {
-
+void printMatrix(int **matrix, int rows, int cols) {
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             printf("%d ", matrix[i][j]);
@@ -42,16 +45,49 @@ void printMatrix(int matrix[MAX_ROWS][MAX_COLS], int rows, int cols) {
     }
 }
 
-void matrixMultiplication(){}
+void matrixMultiplication() {}
+
+void freeMatrix(int **matrix, int rows) {
+    for (int i = 0; i < rows; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
+}
+
+void writeMatrixToFile(const char *filename, int **matrix, int rows, int cols) {
+    FILE *file = fopen(filename, "w");
+
+    if (file == NULL) {
+        fprintf(stderr, "Nie można otworzyć pliku %s do zapisu.\n", filename);
+        exit(1);
+    }
+
+    fprintf(file, "%d %d\n", rows, cols);
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            fprintf(file, "%d ", matrix[i][j]);
+        }
+        fprintf(file, "\n");
+    }
+
+    fclose(file);
+}
+
 
 int main() {
-    int matrixA[MAX_ROWS][MAX_COLS], matrixB[MAX_ROWS][MAX_COLS], resultMatrix[MAX_ROWS][MAX_COLS];
+    int **matrixA, **matrixB, **resultMatrix;
     int arows, acolumns, brows, bcolumns;
     int i, j, k;
     int sum = 0;
 
-    readMatrixFromFile("matrixA.txt", matrixA, &arows, &acolumns);
-    readMatrixFromFile("matrixB.txt", matrixB, &brows, &bcolumns);
+    readMatrixFromFile("matrixA.txt", &matrixA, &arows, &acolumns);
+    readMatrixFromFile("matrixB.txt", &matrixB, &brows, &bcolumns);
+
+    resultMatrix = (int **)malloc(arows * sizeof(int *));
+    for (int i = 0; i < arows; i++) {
+        resultMatrix[i] = (int *)malloc(bcolumns * sizeof(int));
+    }
 
     printf("Matrix A:\n");
     printMatrix(matrixA, arows, acolumns);
@@ -59,7 +95,7 @@ int main() {
     printf("\nMatrix B:\n");
     printMatrix(matrixB, brows, bcolumns);
 
-    // Matrix multiplation
+    // Matrix multiplication
 
     for (i = 0; i < arows; i++) {
         for (j = 0; j < bcolumns; j++) {
@@ -72,7 +108,13 @@ int main() {
     }
 
     printf("Result:\n");
-    printMatrix(resultMatrix,arows,bcolumns);
+    printMatrix(resultMatrix, arows, bcolumns);
+    writeMatrixToFile("resultMatrix.txt", resultMatrix, arows, bcolumns);
+
+    // Free allocated memory
+    freeMatrix(matrixA, arows);
+    freeMatrix(matrixB, brows);
+    freeMatrix(resultMatrix, arows);
 
     return 0;
 }
